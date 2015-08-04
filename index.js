@@ -3,16 +3,16 @@
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 
-// cached EventHub instances
+// cached EventActions instances
 var hubs = {};
 
 /**
- * EventHub object
+ * EventActions object
  *
  */
-function EventHub() {
-	if (!(this instanceof EventHub))
-		return new EventHub();
+function EventActions() {
+	if (!(this instanceof EventActions))
+		return new EventActions();
 
 	EventEmitter.call(this);
 
@@ -34,17 +34,17 @@ function EventHub() {
 		self.emit('removeEventListener', event, listener);
 	});
 }
-util.inherits(EventHub, EventEmitter);
+util.inherits(EventActions, EventEmitter);
 
 /**
- * Get or create named EventHub instance
+ * Get or create named EventActions instance
  * @param  {string} name Instance name, defaults to 'default'
- * @return {EventHub}    EventHub instance
+ * @return {EventActions}    EventActions instance
  */
 module.exports = function(name) {
 	name = name || 'default';
 	if (!hubs[name]) {
-		hubs[name] = new EventHub();
+		hubs[name] = new EventActions();
 	}
 	return hubs[name];
 };
@@ -57,9 +57,9 @@ module.exports = function(name) {
  * Adds a listener to specified action
  * @param  {string}   action   Action
  * @param  {Function} callback Listener
- * @return {EventHub}          Self
+ * @return {EventActions}          Self
  */
-EventHub.prototype.onAction = function(action, callback) {
+EventActions.prototype.onAction = function(action, callback) {
 	this.actions.on(action, callback);
 	return this;
 };
@@ -69,9 +69,9 @@ EventHub.prototype.onAction = function(action, callback) {
  * @param  {EventEmitter} sender     Sender EventEmitter
  * @param  {string}       event      Source event
  * @param  {string}       toAction   Destination action
- * @return {EventHub}                Self
+ * @return {EventActions}                Self
  */
-EventHub.prototype.bindAction = function(sender, event, toAction) {
+EventActions.prototype.bindAction = function(sender, event, toAction) {
 	sender.on(event, this.actions.emit.bind(sender, toAction));
 	return this;
 };
@@ -80,9 +80,9 @@ EventHub.prototype.bindAction = function(sender, event, toAction) {
  * Add a one time listener for the action.
  * @param  {string}   action   Action
  * @param  {Function} callback Listener
- * @return {EventHub}          Self
+ * @return {EventActions}          Self
  */
-EventHub.prototype.onceAction = function(action, callback) {
+EventActions.prototype.onceAction = function(action, callback) {
 	this.actions.once(action, callback);
 	return this;
 };
@@ -91,9 +91,9 @@ EventHub.prototype.onceAction = function(action, callback) {
  * Remove listener from action emitter
  * @param  {string}   action   Action
  * @param  {Function} listener Listener (optional)
- * @return {EventHub}          Self
+ * @return {EventActions}          Self
  */
-EventHub.prototype.removeAction = function(action, listener) {
+EventActions.prototype.removeAction = function(action, listener) {
 	if (typeof listener === 'undefined') {
 		this.actions.removeAllListeners(action);
 	} else {
@@ -105,9 +105,9 @@ EventHub.prototype.removeAction = function(action, listener) {
 /**
  * Emit action
  * @param  {string} action Action
- * @return {EventHub}      Self
+ * @return {EventActions}      Self
  */
-EventHub.prototype.emitAction = function(action) {
+EventActions.prototype.emitAction = function(action) {
 	this.actions.emit.apply(null, arguments);
 	return this;
 };
@@ -118,22 +118,22 @@ EventHub.prototype.emitAction = function(action) {
 
 // For documentation see above and replace 'action' with 'event'.. :P
 
-EventHub.prototype.onEvent = function(event, callback) {
+EventActions.prototype.onEvent = function(event, callback) {
 	this.events.on(event, callback);
 	return this;
 };
 
-EventHub.prototype.bindEvent = function(sender, fromEvent, toEvent) {
+EventActions.prototype.bindEvent = function(sender, fromEvent, toEvent) {
 	sender.on(fromEvent, this.events.emit.bind(sender, toEvent));
 	return this;
 };
 
-EventHub.prototype.onceEvent = function(event, callback) {
+EventActions.prototype.onceEvent = function(event, callback) {
 	this.events.once(event, callback);
 	return this;
 };
 
-EventHub.prototype.removeEvent = function(event, listener) {
+EventActions.prototype.removeEvent = function(event, listener) {
 	if (typeof listener === 'undefined') {
 		this.events.removeAllListeners(event);
 	} else {
@@ -142,7 +142,7 @@ EventHub.prototype.removeEvent = function(event, listener) {
 	return this;
 };
 
-EventHub.prototype.emitEvent = function(event) {
+EventActions.prototype.emitEvent = function(event) {
 	this.events.emit.apply(null, arguments);
 	return this;
 };

@@ -1,5 +1,5 @@
 {
-	"name": "event-hub",
+	"name": "event-actions",
 	"description": "Application level event and action emitter",
 	"version": "0.1.0",
 	"main": "index.js",
