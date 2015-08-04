@@ -108,7 +108,7 @@ EventActions.prototype.removeAction = function(action, listener) {
  * @return {EventActions}      Self
  */
 EventActions.prototype.emitAction = function(action) {
-	this.actions.emit.apply(null, arguments);
+	this.actions.emit.apply(this.actions, arguments);
 	return this;
 };
 
@@ -143,6 +143,6 @@ EventActions.prototype.removeEvent = function(event, listener) {
 };
 
 EventActions.prototype.emitEvent = function(event) {
-	this.events.emit.apply(null, arguments);
+	this.events.emit.apply(this.events, arguments);
 	return this;
 };
