@@ -1,11 +1,11 @@
 {
-	"name": "event-actions",
-	"description": "Application level event and action emitter",
-	"version": "0.1.0",
-	"main": "index.js",
-	"author": {
-		"name": "Harri Kovalainen",
-		"email": "hakovala@gmail.com"
-	},
-	"license": "MIT"
+  "name": "event-actions",
+  "description": "Application level event and action emitter",
+  "version": "0.1.1",
+  "main": "index.js",
+  "author": {
+    "name": "Harri Kovalainen",
+    "email": "hakovala@gmail.com"
+  },
+  "license": "MIT"
 }
