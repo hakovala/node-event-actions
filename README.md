@@ -152,7 +152,7 @@ Listen for action/event. Listener is removed after triggering.
 Binds any EventEmitter event to specified action or event.
 Enables action/event piping:
 
-```
+```javascript
 var A = new EventActions();
 var B = new EventActions();
 
