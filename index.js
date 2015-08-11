@@ -3,50 +3,107 @@
 var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 
-// cached EventActions instances
-var hubs = {};
-
 /**
- * EventActions object
- *
+ * EventActions.
+ * @param {string}       ns     Namespace, or undefined if root
+ * @param {EventActions} parent Parent EventActions or undefined if root
  */
-function EventActions() {
+function EventActions(ns, parent) {
 	if (!(this instanceof EventActions))
-		return new EventActions();
+		return new EventActions(ns, parent)
+
+	this.ns = ns;
+	this._parent = parent;
+
+	// verify namespace and parent
+	if (this.ns || this._parent) {
+		if (typeof this.ns !== 'string')
+			throw new Error('Namespace must be a string');
+		if (!(this._parent instanceof EventActions))
+			throw new Error('Parent must be instanceof EventActions');
+	}
 
 	EventEmitter.call(this);
 
-	this.actions = new EventEmitter();
-	this.events = new EventEmitter();
+	var root = this.root();
+	this.actions = parent ? root.actions : new EventEmitter();
+	this.events = parent ? root.events : new EventEmitter();
 
-	// bind newListener and removeListener events
-	var self = this;
-	this.actions.on('newListener', function(event, listener) {
-		self.emit('newActionListener', event, listener);
-	});
-	this.actions.on('removeListener', function(event, listener) {
-		self.emit('removeActionListener', event, listener);
-	});
-	this.events.on('newListener', function(event, listener) {
-		self.emit('newEventListener', event, listener);
-	});
-	this.events.on('removeListener', function(event, listener) {
-		self.emit('removeEventListener', event, listener);
-	});
+	// override default emitters if this is a root instance
+	if (!this._parent) {
+		this.actions._emit = this.actions.emit;
+		this.actions.emit = function(action) {
+			var args = Array.prototype.slice.call(arguments, 1);
+
+			var parts = action.split(':');
+			var target = parts.slice(0, -1).join(':');
+			// emit action event, callback(target, action, arguments)
+			this.emit('action', target, parts.slice(-1), args);
+
+			// pass through
+			this.actions._emit.apply(this.actions, arguments);
+		}.bind(this);
+
+		this.events._emit = this.events.emit;
+		this.events.emit = function(event) {
+			var args = Array.prototype.slice.call(arguments, 1);
+
+			var parts = event.split(':');
+			var target = parts.slice(0, -1).join(':');
+			// emit event event, callback(target, event, arguments)
+			this.emit('event', target, parts.slice(-1), args);
+
+			// pass through
+			this.events._emit.apply(this.events, arguments);
+		}.bind(this);
+	}
 }
 util.inherits(EventActions, EventEmitter);
+module.exports = EventActions;
 
 /**
- * Get or create named EventActions instance
- * @param  {string} name Instance name, defaults to 'default'
- * @return {EventActions}    EventActions instance
+ * Create namespaced EventActions instance.
+ * Namespaced EventAction instances share action and event EventEmitters.
  */
-module.exports = function(name) {
-	name = name || 'default';
-	if (!hubs[name]) {
-		hubs[name] = new EventActions();
+EventActions.prototype.createNamespace = function(ns) {
+	ns = this.ns ? [this.ns, ns].join(':') : ns;
+	return new EventActions(ns, this);
+};
+
+/**
+ * Get parent EventActions instance
+ * @return {[type]} [description]
+ */
+EventActions.prototype.parent = function() {
+	return this._parent;
+};
+
+/**
+ * Get root EventActions instance
+ * @return {[type]} [description]
+ */
+EventActions.prototype.root = function() {
+	var current = this;
+	var parent = current.parent();
+	while (parent) {
+		current = parent;
+		parent = current.parent();
 	}
-	return hubs[name];
+	return current;
+};
+
+/**
+ * Get namespaced event name if name starts with ':'
+ * otherwise use name as is.
+ * @param  {string} name Event name
+ * @return {string}      Namespaced event name
+ */
+EventActions.prototype._getEventName = function(name) {
+	if (name[0] == ':') {
+		if (!this.ns) return name.slice(1);
+		else return this.ns + name;
+	}
+	return name;
 };
 
 //
@@ -54,95 +111,97 @@ module.exports = function(name) {
 //
 
 /**
- * Adds a listener to specified action
- * @param  {string}   action   Action
- * @param  {Function} callback Listener
- * @return {EventActions}          Self
+ * Add action listener
  */
 EventActions.prototype.onAction = function(action, callback) {
-	this.actions.on(action, callback);
+	this.actions.on(this._getEventName(action), callback);
 	return this;
 };
 
 /**
- * Bind EventEmitter event to
- * @param  {EventEmitter} sender     Sender EventEmitter
- * @param  {string}       event      Source event
- * @param  {string}       toAction   Destination action
- * @return {EventActions}                Self
+ * Emit action event
  */
-EventActions.prototype.bindAction = function(sender, event, toAction) {
-	sender.on(event, this.actions.emit.bind(sender, toAction));
+EventActions.prototype.emitAction = function(action) {
+	var args = Array.prototype.slice.call(arguments, 1);
+	this.actions.emit.apply(this.actions, [this._getEventName(action)].concat(args));
 	return this;
 };
 
 /**
- * Add a one time listener for the action.
- * @param  {string}   action   Action
- * @param  {Function} callback Listener
- * @return {EventActions}          Self
- */
-EventActions.prototype.onceAction = function(action, callback) {
-	this.actions.once(action, callback);
-	return this;
-};
-
-/**
- * Remove listener from action emitter
- * @param  {string}   action   Action
- * @param  {Function} listener Listener (optional)
- * @return {EventActions}          Self
+ * Remove action listener
  */
 EventActions.prototype.removeAction = function(action, listener) {
 	if (typeof listener === 'undefined') {
-		this.actions.removeAllListeners(action);
+		this.actions.removeAllListeners(this._getEventName(action));
 	} else {
-		this.actions.removeListener(action, listener);
+		this.actions.removeListener(this._getEventName(action), listener);
 	}
 	return this;
 };
 
 /**
- * Emit action
- * @param  {string} action Action
- * @return {EventActions}      Self
+ * Pipe events from sender to this action
  */
-EventActions.prototype.emitAction = function(action) {
-	this.actions.emit.apply(this.actions, arguments);
+EventActions.prototype.bindAction = function(sender, event, toAction) {
+	sender.on(event, this.actions.emit.bind(this.actions, this._getEventName(toAction)));
 	return this;
 };
+
+/**
+ * Add action listener which is triggered only once
+ */
+EventActions.prototype.onceAction = function(action, listener) {
+	this.actions.once(this._getEventName(action), listener);
+	return this;
+};
+
 
 //
 // Events
 //
 
-// For documentation see above and replace 'action' with 'event'.. :P
-
+/**
+ * Add event listener
+ */
 EventActions.prototype.onEvent = function(event, callback) {
-	this.events.on(event, callback);
+	this.events.on(this._getEventName(event), callback);
 	return this;
 };
 
-EventActions.prototype.bindEvent = function(sender, fromEvent, toEvent) {
-	sender.on(fromEvent, this.events.emit.bind(sender, toEvent));
+/**
+ * Emit event event
+ */
+EventActions.prototype.emitEvent = function(event) {
+	var args = Array.prototype.slice.call(arguments, 1);
+	this.events.emit.apply(this.events, [this._getEventName(event)].concat(args));
 	return this;
 };
 
-EventActions.prototype.onceEvent = function(event, callback) {
-	this.events.once(event, callback);
-	return this;
-};
-
+/**
+ * Remove event listener
+ */
 EventActions.prototype.removeEvent = function(event, listener) {
 	if (typeof listener === 'undefined') {
-		this.events.removeAllListeners(event);
+		this.events.removeAllListeners(this._getEventName(event));
 	} else {
-		this.events.removeListener(event, listener);
+		this.events.removeListener(this._getEventName(event), listener);
 	}
 	return this;
 };
 
-EventActions.prototype.emitEvent = function(event) {
-	this.events.emit.apply(this.events, arguments);
+/**
+ * Pipe events from sender to this event
+ */
+EventActions.prototype.bindEvent = function(sender, event, toEvent) {
+	sender.on(event, this.events.emit.bind(this.events, this._getEventName(toEvent)));
 	return this;
 };
+
+/**
+ * Add event listener which is triggered only once
+ */
+EventActions.prototype.onceEvent = function(event, listener) {
+	this.events.once(this._getEventName(event), listener);
+	return this;
+};
+
