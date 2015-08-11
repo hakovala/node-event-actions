@@ -38,7 +38,7 @@ function EventActions(ns, parent) {
 			var parts = action.split(':');
 			var target = parts.slice(0, -1).join(':');
 			// emit action event, callback(target, action, arguments)
-			this.emit('action', target, parts.slice(-1), args);
+			this.emit('action', target, parts.slice(-1)[0], args);
 
 			// pass through
 			this.actions._emit.apply(this.actions, arguments);
@@ -51,7 +51,7 @@ function EventActions(ns, parent) {
 			var parts = event.split(':');
 			var target = parts.slice(0, -1).join(':');
 			// emit event event, callback(target, event, arguments)
-			this.emit('event', target, parts.slice(-1), args);
+			this.emit('event', target, parts.slice(-1)[0], args);
 
 			// pass through
 			this.events._emit.apply(this.events, arguments);
