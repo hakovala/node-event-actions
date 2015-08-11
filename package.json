@@ -1,7 +1,7 @@
 {
   "name": "event-actions",
   "description": "Application level event and action emitter",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "index.js",
   "author": {
     "name": "Harri Kovalainen",
