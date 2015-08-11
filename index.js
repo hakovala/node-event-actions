@@ -56,6 +56,10 @@ function EventActions(ns, parent) {
 			// pass through
 			this.events._emit.apply(this.events, arguments);
 		}.bind(this);
+	} else {
+		// bind parents 'action' and 'event' events to this instance
+		this._parent.on('action', this.emit.bind(this, 'action'));
+		this._parent.on('event', this.emit.bind(this, 'event'));
 	}
 }
 util.inherits(EventActions, EventEmitter);
