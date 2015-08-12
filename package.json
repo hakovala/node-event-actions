@@ -7,5 +7,9 @@
     "name": "Harri Kovalainen",
     "email": "hakovala@gmail.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hakovala/node-event-actions.git"
+  },
   "license": "MIT"
 }
