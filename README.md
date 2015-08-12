@@ -66,31 +66,31 @@ child.emitAction('child:action');
 
 ```
 
-See 'example.js' for more complete usage example.
+See `example.js` for more complete usage example.
 
 ## Namespacing
 
 Namespacing actions and events is crusial, expecially when number of connected components grows.
 
-Either absolute or relative namespaces can be used when adding listeners or emitting events. Relative namespace starts with ':' and will be prepend with EventActions instances namespace.
+Either absolute or relative namespaces can be used when adding listeners or emitting events. Relative namespace starts with `:` and will be prepend with EventActions instances namespace.
 
-In example if EventActions namespace is 'root:child', then emitting ':action' will actually trigger listeners registered for 'root:child:action'. Same goes for registering listeners. Adding listener for ':action' on EventActions that has namespace 'root:child', it will listen for events 'root:child:action'.
+In example if EventActions namespace is `root:child`, then emitting `:action` will actually trigger listeners registered for `root:child:action`. Same goes for registering listeners. Adding listener for `:action` on EventActions that has namespace `root:child`, it will listen for events `root:child:action`.
 
 ## Events
 
 ### `action`
 
- * target Target namespace of the action
- * action Name of the action
- * args Arguments passed with action
+ * `target` Target namespace of the action
+ * `action` Name of the action
+ * `args` Arguments passed with action
 
 Emitted when action is emitted from any emitter that share same root emitter.
 
 ### `event`
 
- * target Target namespace of the event
- * event Name of the event
- * args Arguments passed with event
+ * `target` Target namespace of the event
+ * `event` Name of the event
+ * `args` Arguments passed with event
 
 ## EventEmitters
 
@@ -101,10 +101,10 @@ They can be used as normal EventEmitter.
 
 ### `createNamespace`
 
- * ns Namespace
+ * `ns` Namespace
 
 Create namespaced version of EventActions instance.
-Namespaced instances use root emitters.
+Namespaced instances share emitters with root.
 Namespace is appended to relative action/event names.
 
 ### `parent`
@@ -117,37 +117,37 @@ Returns root EventActions instance.
 
 ### `onAction` / `onEvent`
 
- * name Action/event name, absolute or relative
- * listener Action/event listener
+ * `name` Action/event name, absolute or relative
+ * `listener` Action/event listener
 
 Add listener for action/event.
 
 ### `emitAction` / `emitEvent`
 
- * name Action/event name, absolute or relative
- * arguments
+ * `name` Action/event name, absolute or relative
+ * `arguments` ...
 
 Triggers action/event listener with given name.
 
 ### `removeAction` / `removeEvent`
 
- * name Action/event name, absolute or relative
- * listener Action/event listener to remove (optional)
+ * `name` Action/event name, absolute or relative
+ * `listener` Action/event listener to remove (optional)
 
 Remove all or specific listener with given name.
 
 ### `onceAction` / `onceEvent`
 
- * name Action/event name, absolute or relative
- * listener Action/event listener
+ * `name` Action/event name, absolute or relative
+ * `listener` Action/event listener
 
 Listen for action/event. Listener is removed after triggering.
 
 ### `bindAction` / `bindEvent`
 
- * sender Emitter to listen, any EventEmitter
- * event Event to listen for
- * toName Bind to name
+ * `sender` Emitter to listen, any EventEmitter
+ * `event` Event to listen for
+ * `toName` Bind to name
 
 Binds any EventEmitter event to specified action or event.
 Enables action/event piping:
