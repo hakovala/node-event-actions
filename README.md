@@ -66,7 +66,7 @@ child.emitAction('child:action');
 
 ```
 
-See `example.js` for more complete usage example.
+See [`example.js`](example.js) for more complete usage example.
 
 ## Namespacing
 
