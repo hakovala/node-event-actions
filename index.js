@@ -214,21 +214,33 @@ EventActions.prototype.onceEvent = function(event, listener) {
 // EventActions piping
 //
 
+/**
+ * Pipe event to event
+ */
 EventActions.prototype.pipeEventToEvent = function(from, to) {
 	this.onEvent(from, this.events.emit.bind(this.events, this._getEventName(to)));
 	return this;
 };
 
+/**
+ * Pipe event to action
+ */
 EventActions.prototype.pipeEventToAction = function(from, to) {
 	this.onEvent(from, this.actions.emit.bind(this.actions, this._getEventName(to)));
 	return this;
 };
 
+/**
+ * Pipe action to action
+ */
 EventActions.prototype.pipeActionToAction = function(from, to) {
 	this.onAction(from, this.actions.emit.bind(this.actions, this._getEventName(to)));
 	return this;
 };
 
+/**
+ * Pipe action to event
+ */
 EventActions.prototype.pipeActionToEvent = function(from, to) {
 	this.onAction(from, this.events.emit.bind(this.events, this._getEventName(to)));
 	return this;
