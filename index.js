@@ -144,10 +144,10 @@ EventActions.prototype.removeAction = function(action, listener) {
 };
 
 /**
- * Pipe events from sender to this action
+ * Pipe emitter event to EventActions actions
  */
-EventActions.prototype.bindAction = function(sender, event, toAction) {
-	sender.on(event, this.actions.emit.bind(this.actions, this._getEventName(toAction)));
+EventActions.prototype.pipeToAction = function(emitter, event, toAction) {
+	emitter.on(event, this.actions.emit.bind(this.actions, this._getEventName(toAction)));
 	return this;
 };
 
@@ -194,10 +194,10 @@ EventActions.prototype.removeEvent = function(event, listener) {
 };
 
 /**
- * Pipe events from sender to this event
+ * Pipe emitter event to EventActions event
  */
-EventActions.prototype.bindEvent = function(sender, event, toEvent) {
-	sender.on(event, this.events.emit.bind(this.events, this._getEventName(toEvent)));
+EventActions.prototype.pipeToEvent = function(emitter, event, toEvent) {
+	emitter.on(event, this.events.emit.bind(this.events, this._getEventName(toEvent)));
 	return this;
 };
 
@@ -208,4 +208,30 @@ EventActions.prototype.onceEvent = function(event, listener) {
 	this.events.once(this._getEventName(event), listener);
 	return this;
 };
+
+
+//
+// EventActions piping
+//
+
+EventActions.prototype.pipeEventToEvent = function(from, to) {
+	this.onEvent(from, this.events.emit.bind(this.events, this._getEventName(to)));
+	return this;
+};
+
+EventActions.prototype.pipeEventToAction = function(from, to) {
+	this.onEvent(from, this.actions.emit.bind(this.actions, this._getEventName(to)));
+	return this;
+};
+
+EventActions.prototype.pipeActionToAction = function(from, to) {
+	this.onAction(from, this.actions.emit.bind(this.actions, this._getEventName(to)));
+	return this;
+};
+
+EventActions.prototype.pipeActionToEvent = function(from, to) {
+	this.onAction(from, this.events.emit.bind(this.events, this._getEventName(to)));
+	return this;
+};
+
 

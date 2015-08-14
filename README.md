@@ -143,18 +143,43 @@ Remove all or specific listener with given name.
 
 Listen for action/event. Listener is removed after triggering.
 
-### `bindAction` / `bindEvent`
+### `pipeToAction` / `pipeToEvent`
 
- * `sender` Emitter to listen, any EventEmitter
+ * `emitter` Emitter to listen, any EventEmitter
  * `event` Event to listen for
  * `toName` Bind to name
 
 Binds any EventEmitter event to specified action or event.
 Enables action/event piping:
 
+### `pipeEventToEvent` / 'pipeEventToAction' / 'pipeActionToAction' / 'pipeActionToEvent'
+
+ * `from` event/action to pipe from
+ * `to` event/action to pipe to
+
+Pipes the given event/action to other event/action in same EventActions object.
+
+Example of piping:
+
 ```javascript
+var emitter = new EventEmitter();
 var A = new EventActions();
 var B = new EventActions();
+
+// pipe emitter 'remove' event to A 'emitter:remove' action
+A.pipeToAction(emitter, 'remove', 'emitter:remove');
+
+// pipe emitter 'removed' event to B 'emitter:changed' event
+B.pipeToEvent(emitter, 'changed', 'emitter:changed');
+
+// pipe B event to other B event
+B.pipeEventToEvent(':first', 'second');
+
+// pipe B event to B action
+B.pipeEventToAction(':first', 'third');
+
+// NOTE: while piping things between two different EventActions object
+// 'events' and 'actions' properties have to be used as normal EventEmitters
 
 // when 'click' action is emitted from A, it is piped to B action 'child:action'
 B.bindAction(A.actions, 'click', 'child:action');
